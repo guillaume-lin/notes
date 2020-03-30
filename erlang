@@ -1,0 +1,75 @@
+* 标识符
+** a. 定义变量
+   变量以大写字母开头
+   下划线变量(_)代表无用的变量，不会被保存
+   小写字母开头的变量为原子（atom），类似于lisp的symbol
+** b. 定义常量
+   
+** c. 注释
+      %
+关系运算符
+   等于 ==    严格等于 =:=
+   不等于 /=   严格不等于 =/=
+数据结构
+Base#Value
+     定义base进制的数值
+元组(tuple)
+    使用{}定义，比如 {1，2，3}，元组内的元素可以为不同的类型
+    {X,Y} ={2,4}.
+列表(list)
+    使用[]定义，比如[1,2,a,b,c] 列表内的元素可以为不同类型
+    字符串也是列表
+    ++ 运算符用于列表加法  [2,4,2] ++ [2,4] => [2,4,2,2,4]
+    -- 运算符用于列表减法  [2,4,2] -- [ 2,4] => [2]
+    以上运算符都是右结合的
+    hd 是BIF，用于读取列表头元素
+    tl 用于读取除头元素外的其余列表元素
+    [Head|Tail] 列表模式匹配语法
+    | cons操作符，用来构建新列表
+    length() 得到列表长度
+列表推导（list comprenhensionss)
+    [2*N|| N <- [1,2,34,]]
+控制结构
+    逗号，分号，句号
+       逗号分隔函数调用，数据构造，和模式中的参数
+       分号
+    模式匹配
+      greet(male, Name) ->
+        io:format("Hello, Mr. ~s!", [Name]);
+      greet(female, Name) ->
+        io:format("Hello, Mrs. ~s!", [Name]);
+      greet(_, Name) ->
+        io:format("Hello, ~s!", [Name]).
+        不同模式用分号分隔,每个模式为一个函数子句
+    守卫(Guards)
+      守卫为一个函数子句
+      old_enough(X) when X>= 16，x=<104 -> true;  % 此处逗号代表andalso
+      old_enough(_) -> false.
+      上面的when X >= 16 就是guard
+      wrong_age(X) when X < 16; X > 104 ->   % 此处分号代表 orelse
+        true;
+      wrong_age(_) ->
+        false.
+     if 语句
+     if N =:= 2 -> might_succeed;
+     true -> always_does  %% this is erlang's if's else
+     end.
+     case ... of 语句
+        case lists:member(X,Set) of
+          true  -> Set;
+          false -> [X|Set]
+        end.
+     尾递归
+     tail_len([], Acc) -> Acc;
+     tail_len([_|T], Acc) -> tail_len(T,Acc+1).
+     tail_len(L) -> tail_len(L,0).
+     
+     
+面向对象（polymorphism,inheritance,encapsulation)
+模块/包系统
+     -module(Name).  % Name 是一个原子
+     -export([Function1/Arity,Function2/Arity,...,FunctionN/Arity]).
+     -import(module,[Function1/Arity,Function2/Arity,...,FunctionN/Arity]).
+     
+并发/协程
+
