@@ -66,10 +66,16 @@ Base#Value
      
      
 面向对象（polymorphism,inheritance,encapsulation)
+     none
 模块/包系统
      -module(Name).  % Name 是一个原子
      -export([Function1/Arity,Function2/Arity,...,FunctionN/Arity]).
      -import(module,[Function1/Arity,Function2/Arity,...,FunctionN/Arity]).
      
 并发/协程
-
+     spawn(fun()->io:format("hello") end).
+     
+分布式
+     erl -sname <name> [-setcookie] 'cookie' [-hidden]
+     net_kernel:connect_node(<node>).
+     net_adm:ping(<node>).
