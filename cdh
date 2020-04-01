@@ -1,0 +1,124 @@
+CDH安装
+最新免费版本是6.2.1（不需要用户名和密码）
+第一步，安装yum仓库
+下载 https://archive.cloudera.com/cm6/6.2.1/redhat7/yum/cloudera-manager.repo 到/etc/yum.repos.d
+导入key
+rpm --import https://archive.cloudera.com/cm6/6.2.1/redhat7/yum/RPM-GPG-KEY-cloudera
+第二步，安装jdk
+yum install oracle-j2sdk1.8
+（太慢的话，可以安装deltarpm做断点续传，yum install deltarpm）
+第三步，安装cloud era manager server
+sudo yum install cloudera-manager-daemons cloudera-manager-agent cloudera-manager-server
+可选 enable Auto-TLS  https://docs.cloudera.com/documentation/enterprise/6/6.2/topics/install_cm_server.html
+第四步，安装和配置数据库
+采用mariadb（安装略过）
+   a. 停止mariadb
+   b. 把文件/var/lib/mysql/ib_logfile0, /var/lib/mysql/ib_logfile1移出/var/lib/mysql ，进行备份
+   c. 找到my.cnf的位置，一般是（/etc/my.cnf)
+   d. 按如下需求更新my.cnf
+      * 为了预防死锁，设置隔离级别为READ-COMMITTED
+      * 由于cloudera management services会有大量的写，设置innodb_flush_method 为 O_DIRECT
+      * 设置max_connections 属性根据集群的大小。小于50个主机的集群，可以把所有数据库放在同一个实例，设置最大连接数为550
+      推荐的配置如下：
+      [mysqld]
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+transaction-isolation = READ-COMMITTED
+# Disabling symbolic-links is recommended to prevent assorted security risks;
+# to do so, uncomment this line:
+symbolic-links = 0
+# Settings user and group are ignored when systemd is used.
+# If you need to run mysqld under a different user or group,
+# customize your systemd unit file for mariadb according to the
+# instructions in http://fedoraproject.org/wiki/Systemd
+
+key_buffer = 16M
+key_buffer_size = 32M
+max_allowed_packet = 32M
+thread_stack = 256K
+thread_cache_size = 64
+query_cache_limit = 8M
+query_cache_size = 64M
+query_cache_type = 1
+
+max_connections = 550
+#expire_logs_days = 10
+#max_binlog_size = 100M
+
+#log_bin should be on a disk with enough free space.
+#Replace '/var/lib/mysql/mysql_binary_log' with an appropriate path for your
+#system and chown the specified folder to the mysql user.
+log_bin=/var/lib/mysql/mysql_binary_log
+
+#In later versions of MariaDB, if you enable the binary log and do not set
+#a server_id, MariaDB will not start. The server_id must be unique within
+#the replicating group.
+server_id=1
+
+binlog_format = mixed
+
+read_buffer_size = 2M
+read_rnd_buffer_size = 16M
+sort_buffer_size = 8M
+join_buffer_size = 8M
+
+# InnoDB settings
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit  = 2
+innodb_log_buffer_size = 64M
+innodb_buffer_pool_size = 4G
+innodb_thread_concurrency = 8
+innodb_flush_method = O_DIRECT
+innodb_log_file_size = 512M
+
+[mysqld_safe]
+log-error=/var/log/mariadb/mariadb.log
+pid-file=/var/run/mariadb/mariadb.pid
+
+#
+# include all files from the config directory
+#
+!includedir /etc/my.cnf.d
+
+      e. 确保mariadb在开机时启动
+      f. 启动mariadb
+      g. 运行  /usr/bin/mysql_secure_installation
+         安装mysql jdbc driver for mariadb
+         不支持mariadb jdbc driver，所以只能安装mysql jdbc driver
+         * wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.46.tar.gz
+         * tar zxvf mysql-connector-java-5.1.46.tar.gz
+         * sudo mkdir -p /usr/share/java/
+           cd mysql-connector-java-5.1.46
+           sudo cp mysql-connector-java-5.1.46-bin.jar /usr/share/java/mysql-connector-java.jar
+       h. 创建服务所需的mariadb 账号
+          CREATE DATABASE <database> DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+          GRANT ALL ON <database>.* TO '<user>'@'%' IDENTIFIED BY '<password>';
+          Service	        Database	       User
+          Cloudera Manager Server	scm	scm
+          Activity Monitor	amon	amon
+          Reports Manager	rman	rman
+          Hue	hue	hue
+          Hive Metastore Server	metastore	hive
+          Sentry Server	sentry	sentry
+          Cloudera Navigator Audit Server	nav	nav
+          Cloudera Navigator Metadata Server	navms	navms
+          Oozie	oozie	oozie
+      
+          确认所有数据库都建立了
+          SHOW DATABASES;
+          确认权限已经分配
+          SHOW GRANTS FOR '<user>'@'%';
+    第五步，设置cloudera manager 数据库
+    使用脚本 scm_prepare_database.sh
+    sudo /opt/cloudera/cm/schema/scm_prepare_database.sh <databaseType> <databaseName> <databaseUser>
+    如果存在嵌入的PostgreSQL属性文件，将其删除
+    sudo rm /etc/cloudera-scm-server/db.mgmt.properties
+    第六步，安装CDH和其他软件
+    * 启动cloudera manager
+    sudo systemctl start cloudera-scm-server
+    * 观察cloudera manager启动log
+    sudo tail -f /var/log/cloudera-scm-server/cloudera-scm-server.log
+    * 访问地址 http://<server_host>:7180， 如果有启用auto-TLS，则应该用https
+    * 用用户名admin，密码admin登录
+    
+    第七步，设置好集群
