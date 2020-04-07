@@ -122,3 +122,12 @@ pid-file=/var/run/mariadb/mariadb.pid
     * 用用户名admin，密码admin登录
     
     第七步，设置好集群
+    
+    
+    === 把parcel文件下载到cloudera-scm-server上进行安装 ===
+    从 https://archive.cloudera.com/cdh6/6.2.1/parcels/ 下载文件
+    拷贝到  /opt/cloudera/parcel-repo/ 目录下,有如下三个文件
+    CDH-6.2.1-1.cdh6.2.1.p0.1425774-el7.parcel
+    CDH-6.2.1-1.cdh6.2.1.p0.1425774-el7.parcel.sha1  (sha1下载下来后，后缀名改为sha)
+    manifest.json
+    设置文件权限 chown cloudera-scm:cloudera-scm ./*
