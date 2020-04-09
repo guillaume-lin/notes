@@ -134,3 +134,5 @@ pid-file=/var/run/mariadb/mariadb.pid
 
 ********** spark history server 无缘无故退出 *******
 解决方法：在spark菜单上执行，create spark history log dir
+**********  上传yarn框架的jar包 ***********************
+CM->Yarn->Actions->Click on "Install YARN MapReduce Framework JARs".
