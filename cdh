@@ -131,3 +131,6 @@ pid-file=/var/run/mariadb/mariadb.pid
     CDH-6.2.1-1.cdh6.2.1.p0.1425774-el7.parcel.sha1  (sha1下载下来后，后缀名改为sha)
     manifest.json
     设置文件权限 chown cloudera-scm:cloudera-scm ./*
+
+********** spark history server 无缘无故退出 *******
+解决方法：在spark菜单上执行，create spark history log dir
