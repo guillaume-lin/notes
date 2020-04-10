@@ -136,3 +136,22 @@ pid-file=/var/run/mariadb/mariadb.pid
 解决方法：在spark菜单上执行，create spark history log dir
 **********  上传yarn框架的jar包 ***********************
 CM->Yarn->Actions->Click on "Install YARN MapReduce Framework JARs".
+
+*******************************************
+安装CDH前主机的前置准备
+********************************
+1.确保OS的yum源可以正常使用，通过yum repolist命令可以查看到匹配的OS的所有包
+
+2.确保Cloudera Manager的yum源运行正常
+
+3.hosts文件配置，需要将Gateway节点的IP和hostname加入到CDH集群节点的hosts文件中，并同步到所有机器包括Gateway节点 《重要》
+
+4.禁用SELinux
+
+5.关闭防火墙
+
+6.设置swap为10
+
+7.关闭透明大页面
+
+8.配置时钟同步
