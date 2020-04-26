@@ -1,0 +1,16 @@
+1. 使用pip install apache-airflow
+2. linux下如果安装不了，采用virtualenv安装
+   pip install virtualenv
+   进入virtualenv环境，再安装apache-airflow
+   
+   
+3. 用mysql做database backend
+   mysql需要有如下配置
+   [mysqld]
+   explicit_defaults_for_timestamp=1
+   
+   修改$AIRFLOW_HOME/airflow.cfg的配置，使用新的数据库连接
+   把executor 设置成 LocalExecutor,用于在本地并行执行任务
+   执行如下命令初始化数据库
+   airflow initdb
+   
