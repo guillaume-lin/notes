@@ -1,3 +1,5 @@
+查看状态
+winrm enumerate winrm/config/listener
 服务计算机
 1. Enable-PSRemoting -force
 客户计算机
