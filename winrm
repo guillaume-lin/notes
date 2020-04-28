@@ -3,7 +3,7 @@ winrm enumerate winrm/config/listener
 服务计算机
 1. Enable-PSRemoting -force
 客户计算机
-1. start-servie WinRM     启动winrm
+1. start-service WinRM     启动winrm
 2. set-item wsman:\localhost\Client\TrustedHosts -value "192.168.0.31,192.168.0.32"  把远程计算机加入受信任列表，可以有通配符,这一步很重要
 
 #把远程计算机加入受信任主机的另一种方式
