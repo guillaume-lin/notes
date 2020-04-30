@@ -1,0 +1,8 @@
+1. 添加docker仓库
+sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+2. 安装docker依赖的containerd.io
+sudo dnf install https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm
+3. 安装docker
+dnf install docker-ce -y
+4. 启动docker
+sudo systemctl enable --now docker
