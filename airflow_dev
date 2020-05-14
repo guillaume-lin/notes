@@ -1,0 +1,12 @@
+基本概念
+* dag
+* task
+* execution_date
+* operator
+* sensor
+
+* hook
+  是接口，用来通向外部数据库，与外部数据库沟通
+* conn
+  连接，保存连接的信息，比如用户名，密码，主机地址等
+* plug
