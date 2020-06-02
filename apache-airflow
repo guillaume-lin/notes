@@ -14,3 +14,11 @@
    执行如下命令初始化数据库
    airflow initdb
    
+   
+   ===使用docker-airflow 进行安装 ====
+git clone    https://github.com/puckel/docker-airflow.git
+cd docker-airflow
+修改Dockerfile 可以修改配置
+建议用docker的方式开发，比较容易成功
+
+   
