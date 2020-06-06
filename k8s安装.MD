@@ -64,3 +64,13 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 
 
 
+* 安装dashboard
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.1/aio/deploy/head.yaml
+* 通过代理访问dashboard
+kubectl port-forward --address="172.22.19.242" -n kubernetes-dashboard service/kubernetes-dashboard 8080:443
+打开浏览器访问 https://172.22.19.242/ 即可访问到dashboard
+
+* 登录dashboard
+通过下方创建一个用户
+https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
+登录即可
