@@ -90,7 +90,7 @@ pid-file=/var/run/mariadb/mariadb.pid
          * sudo mkdir -p /usr/share/java/
            cd mysql-connector-java-5.1.46
            sudo cp mysql-connector-java-5.1.46-bin.jar /usr/share/java/mysql-connector-java.jar
-       h. 创建服务所需的mariadb 账号
+       h. 创建服务所需的mariadb 账号,密码为用户名后加12345
           CREATE DATABASE <database> DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
           GRANT ALL ON <database>.* TO '<user>'@'%' IDENTIFIED BY '<password>';
           Service	        Database	       User
@@ -150,7 +150,7 @@ CM->Yarn->Actions->Click on "Install YARN MapReduce Framework JARs".
 
 5.关闭防火墙
 
-6.设置swap为10
+6.设置swap为0
 
 7.关闭透明大页面
 
