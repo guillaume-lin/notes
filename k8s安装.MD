@@ -63,11 +63,7 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 * 按需安装其他组件
     
     
-以下用来新增节点
-# master 查看节点检查token是否有效
-kubeadm token list
-# 生成新的token和命令。然后在node重新执行
-kubeadm token create --print-join-command
+
 
 
 
@@ -81,3 +77,9 @@ kubectl port-forward --address="172.22.19.242" -n kubernetes-dashboard service/k
 通过下方创建一个用户
 https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
 登录即可
+    
+ 以下用来新增节点
+# master 查看节点检查token是否有效
+kubeadm token list
+# 生成新的token和命令。然后在node重新执行
+kubeadm token create --print-join-command
