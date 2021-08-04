@@ -19,7 +19,7 @@ yum install kubeadm
 * 拉取gcr.io上的镜像(所有的节点上都要有这些镜像）
 到hub.docker.com上搜索下gcr.io的镜像，下载到本地
 
-images=(  #
+images=(  
 kube-apiserver:v1.18.3
 kube-controller-manager:v1.18.3
 kube-scheduler:v1.18.3
@@ -61,6 +61,13 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
  kubectl get pods -n kube-system
  
 * 按需安装其他组件
+    
+    
+以下用来新增节点
+# master 查看节点检查token是否有效
+kubeadm token list
+# 生成新的token和命令。然后在node重新执行
+kubeadm token create --print-join-command
 
 
 
