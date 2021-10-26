@@ -83,3 +83,11 @@ https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/cre
 kubeadm token list
 # 生成新的token和命令。然后在node重新执行
 kubeadm token create --print-join-command
+    
+# docker 设置代理
+配置如下文件
+vi  /etc/systemd/system/docker.service.d/http-proxy.conf
+[Service]
+Environment="HTTP_PROXY=socks5://172.22.21.131:1080/" "HTTPS_PROXY=socks5://172.22.21.131:1080/" "NO_PROXY=localhost,127.0.0.1,172.22.0.0/16,192.168.0.0/16"
+~
+
