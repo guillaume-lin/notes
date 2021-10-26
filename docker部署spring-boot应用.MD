@@ -136,3 +136,11 @@ spec:
                 port:
                   number: 8080
 
+
+7. 用kubectl set image 更新镜像
+kubectl set image  deployment/haecbi-admin-deployment haecbi-admin=172.22.19.230:5001/haecbi-admin:prod-11
+设置完后，k8s会重新来取镜像进行升级更新
+ kubectl rollout history deployment/haecbi-admin-deployment 查看历史
+ 回滚到特定版本
+ kubectl rollout undo deployment/haecbi-admin-deployment --to-revision=1
+ 
