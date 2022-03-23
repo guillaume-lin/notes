@@ -1,0 +1,32 @@
+spring.stream.function 定义消息处理函数，定义完消息处理函数后，系统自动配置bindings
+
+spring.stream.binders.rabbit.bindings.<bind-name>.consumer.auto-bind-dlq 设置为true，自动绑定dlq
+spring.stream.bindings.<bind-name>.group: 设置消费者组，这样队列名就不是匿名的
+spring.stream.bindings.<bind-name>.consuemr.max-attempts: 设置放入dlq前的重试次数
+
+
+spring:
+  stream:
+    binders:
+
+      rabbit:
+        bindings:
+          sayHello-in-0:
+            consumer:
+              auto-bind-dlq: true
+          weixinNotice-in-0:
+
+            consumer:
+              auto-bind-dlq: true
+spring:
+  stream:
+     bindings:
+        sayHello-in-0:
+          destination: sayHello-in-0
+          group: hello
+          consumer:
+            max-attempts: 1
+        weixinNotice-in-0:
+          group: ${spring.application.name}
+    function:
+      definition: weixinNotice;sayHello
