@@ -1,1 +1,9 @@
 https://projects.spring.io/spring-security-oauth/docs/oauth2.html
+
+
+一个WebSecurityConfigurerAdapter.configure定义一个filter chain 处理特定的URL pattern, 这个配置需要用 @Order(value) 定义优先级
+
+spring security 在
+这个filter chain 里面插入 DelegatingFilterProxy, 这个proxy会调用FilterChainProxy,
+FilterChainProxy 会逐个调用security相关的filter
+
