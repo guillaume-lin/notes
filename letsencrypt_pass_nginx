@@ -1,0 +1,30 @@
+location 优先级
+https://developer.aliyun.com/article/753379
+
+k8s ingress annotation
+
+#
+#   add pass through location for lets encrypt's  certbot renew
+#   
+#
+#   kubectl apply -f letsencrypt.yml
+#
+#   use ^~ to guarantee priority
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/server-snippet: |
+        location ^~ /.well-known {
+          proxy_set_header Host $http_host;
+          proxy_pass http://10.253.51.147$request_uri;
+        }
+        
+  name: ingress-letsencrypt
+spec:
+  rules:
+  - host: xxx.host.cn
+  - host: yyy.host.cn
+  
