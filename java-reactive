@@ -1,0 +1,8 @@
+Mono 
+代表 0 - 1 的数据流
+
+Flux
+代表 0 - N 的数据流
+
+Mon 和 Flux是publisher，产生数据
+当publisher的subscribe被调用时，开始发射数据
