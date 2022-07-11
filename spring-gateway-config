@@ -1,0 +1,30 @@
+spring gateway 优先级配置
+
+        - id: baidu
+          uri: lb://b2cshop-mall
+          order: 1
+          predicates:
+            - Path=/mall/categoryList/**
+          filters:
+            # 验证码处理
+            - ValidateCodeFilter
+            - StripPrefix=1
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers Vary
+            
+         # 系统模块
+        - id: b2cshop-mall
+          uri: lb://b2cshop-mall
+          order: 2
+          predicates:
+            - Path=/mall/**
+          filters:
+            - name: BlackListUrlFilter
+              args:
+                blacklistUrl:
+                  - /user/info/*
+            - StripPrefix=1
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers Vary
+           # 系统模块
+
+
+order=1 优先于 order=2
