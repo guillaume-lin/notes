@@ -6,3 +6,222 @@ https://www.cnblogs.com/zlt2000/p/11459390.html
 3. 通过openvpn连接到k8s内的集群
 
 kylemanna/docker-openvpn
+
+@Slf4j
+public class CustomRandomLoadBalancerClient implements ReactorServiceInstanceLoadBalancer {
+
+    // 服务列表
+    private ObjectProvider<ServiceInstanceListSupplier> serviceInstanceListSupplierProvider;
+
+    public CustomRandomLoadBalancerClient(ObjectProvider<ServiceInstanceListSupplier> serviceInstanceListSupplierProvider) {
+        log.info("CustomRandomLoadBalancerClient");
+        this.serviceInstanceListSupplierProvider = serviceInstanceListSupplierProvider;
+    }
+
+    @Override
+    public Mono<Response<ServiceInstance>> choose(Request request) {
+        ServiceInstanceListSupplier supplier = serviceInstanceListSupplierProvider.getIfAvailable();
+
+        Object obj = request.getContext();
+        if(obj != null){
+            log.info("CustomeRandomLoadBalancer context: "+obj.getClass().toString());
+        }
+
+        if(obj instanceof RequestDataContext) {
+            RequestDataContext ctx = (RequestDataContext)obj;
+            HttpHeaders headers = ctx.getClientRequest().getHeaders();
+            return supplier.get().next().map(list->getInstanceResponse(list,headers));
+        }
+        if(obj instanceof RetryableRequestContext){
+            RequestData rd = ((RetryableRequestContext)obj).getClientRequest();
+            HttpHeaders headers = rd.getHeaders();
+            return supplier.get().next().map(list->getInstanceResponse(list,headers));
+        }
+
+        return supplier.get().next().map(list->getInstanceResponse(list,null));
+    }
+
+    /**
+     * 使用随机数获取服务
+     * @param instances
+     * @return
+     */
+    private Response<ServiceInstance> getInstanceResponse(
+            List<ServiceInstance> instances, HttpHeaders headers) {
+
+        if (instances.isEmpty()) {
+            return new EmptyResponse();
+        }
+        // 请求里面的version header
+        String version = getVersion(headers);
+        if(!StrUtil.isEmpty(version)){
+            ServiceInstance si = findVersionedServiceInstance(instances,version);
+            if(si != null){
+                return new DefaultResponse(si);  // 返回指定版本的服务实例
+            }
+        }
+
+        // 默认随机算法
+        instances = findNormalServiceInstance(instances); // 返回不带版本的服务实例
+        if(instances.isEmpty()){
+            return new EmptyResponse();
+        }
+        int size = instances.size();
+        Random random = new Random();
+        ServiceInstance instance = instances.get(random.nextInt(size));
+        log.info("========choose instance ======== "+instance.getHost()+":"+instance.getPort());
+        return new DefaultResponse(instance);
+    }
+
+    /**
+     * 获取透传来的version header
+     * @param headers
+     * @return
+     */
+    private String getVersion(HttpHeaders headers){
+        // 先从 HttpHeaders 里找下
+        if(headers != null) {
+            List<String> lists = headers.get("version");
+            if (lists != null && lists.size() > 0) {
+                return lists.get(0);
+            }
+        }
+
+        // 从RequestContextHolder里面找
+        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        if(ra instanceof HttpServletRequest){
+            HttpServletRequest hsr = (HttpServletRequest)ra;
+            String version = hsr.getHeader("version");
+            log.info("request version: "+version);
+            return version;
+        }
+        return null;
+    }
+    /**
+     * 返回指定版本的服务实例
+     * @param ss
+     * @param version
+     * @return
+     */
+    private ServiceInstance findVersionedServiceInstance(List<ServiceInstance> ss,String version){
+        for(ServiceInstance si: ss){
+            Map<String,String> map = si.getMetadata();
+            if(version.equalsIgnoreCase(map.get("version"))){
+                return si;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 过滤掉带版本的服务实例
+     * @param ss
+     * @return
+     */
+    private List<ServiceInstance> findNormalServiceInstance(List<ServiceInstance> ss){
+        ArrayList<ServiceInstance> services = new ArrayList<>();
+        for(ServiceInstance si: ss){
+            Map<String,String> map = si.getMetadata();
+            if(StrUtil.isEmpty(map.get("version"))){
+                services.add(si);
+            }
+        }
+        return services;
+    }
+}
+
+
+public class LoadBalancerAutoConfiguration {
+
+    @Bean
+    @ConditionalOnProperty(value="isolation.enabled", havingValue = "true", matchIfMissing = false)
+    public ReactorServiceInstanceLoadBalancer customLoadBalancer(ObjectProvider<ServiceInstanceListSupplier> serviceInstanceListSupplierProvider) {
+        return new CustomRandomLoadBalancerClient(serviceInstanceListSupplierProvider);
+    }
+    @Bean
+    @ConditionalOnProperty(value="isolation.enabled", havingValue = "true", matchIfMissing = false)
+    public RestTemplate restTemplate(){
+        RestTemplate restTemplate = new RestTemplate();
+        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+        if(CollectionUtils.isEmpty(interceptors)){
+            interceptors = new ArrayList<ClientHttpRequestInterceptor>();
+        }
+        interceptors.add(new RestTemplateInterceptor());
+        restTemplate.setInterceptors(interceptors);
+        return restTemplate;
+    }
+
+
+}
+
+
+
+public class RestTemplateInterceptor  implements ClientHttpRequestInterceptor {
+    @Override
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
+                                        ClientHttpRequestExecution execution) throws IOException {
+        RequestAttributes attr = RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes sra = null;
+        if(attr instanceof  ServletRequestAttributes){
+            sra = (ServletRequestAttributes)attr;
+        }
+
+        if(sra != null && sra.getRequest() != null ) {
+            HttpServletRequest hsr = sra.getRequest();
+            if(hsr.getHeader("version") != null) {
+                String version = hsr.getHeader("version");
+                request.getHeaders().add("version", version);
+            }
+        }
+        return execution.execute(request,body);
+    }
+}
+
+
+@Configuration
+public class VersionFeignConfiguration {
+    @Bean
+    @ConditionalOnProperty(value="isolation.enabled", havingValue = "true", matchIfMissing = false)
+    public RequestInterceptor versionRequestInterceptor()
+    {
+        return new VersionFeignRequestInterceptor();
+    }
+
+}
+
+@Slf4j
+@Component
+public class VersionFeignRequestInterceptor implements RequestInterceptor {
+
+    @Override
+    public void apply(RequestTemplate requestTemplate)
+    {
+
+        // 从RequestContextHolder里面找
+        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        if(ra instanceof HttpServletRequest){
+            HttpServletRequest hsr = (HttpServletRequest)ra;
+            String version = hsr.getHeader("version");
+            if(!StrUtil.isEmpty(version)){
+                log.info("request version: "+version + " for "+hsr.getRequestURI());
+                requestTemplate.header("version",version);
+            }
+
+        }
+
+
+        if(ra instanceof ServletRequestAttributes){
+            ServletRequestAttributes sra = (ServletRequestAttributes) ra;
+            if(sra.getRequest() != null) {
+                String version = sra.getRequest().getHeader("version");
+                if (!StrUtil.isEmpty(version)) {
+                    log.info("request version: " + version+ " for "+sra.getRequest().getRequestURI());
+                    requestTemplate.header("version", version);
+                }
+            }
+        }
+        // 跨线程处理
+
+    }
+}
+
