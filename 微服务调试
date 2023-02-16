@@ -4,3 +4,5 @@ https://www.cnblogs.com/zlt2000/p/11459390.html
 1. 用verson 区分 微服务
 2. 自定义负载均衡规则，发请求指定version，没有指定的，用默认的
 3. 通过openvpn连接到k8s内的集群
+
+kylemanna/docker-openvpn
