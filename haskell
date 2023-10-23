@@ -2,4 +2,28 @@ module Main where
 main = do
   putStrLn "hello"
 
+
+:: types constraint
+for example:
+compare :: a -> a -> Ordering
+says compare is of type  function, and the function has two inputs ,return Ordering
+
+\ says anonymous function
+let fn = \a-> a + 1
+
+=> 
+follow function signature
+for example:
+double x y = x + y
+:t double
+double :: Num a => a -> a -> a
+
+annotated 类型注解
+
+defining types takes trhee forms
+1. alias
+type
+type MakerM a = Int
+2. 
+
   
